@@ -4,6 +4,7 @@ const { getEmployeeModel } = require('../../config/db');
 const crypto = require('crypto');
 const { sendMail } = require('../utils/mailer');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 
 
@@ -222,7 +223,7 @@ const resetPassword = async (req, res) => {
     const employee = await Employee.findOne({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpires: { [Sequelize.Op.gt]: Date.now() },  // token not expired
+        resetPasswordExpires: { [Op.gt]: Date.now() },  // token not expired
       }
     });
 

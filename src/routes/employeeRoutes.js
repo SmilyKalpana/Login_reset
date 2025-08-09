@@ -14,6 +14,6 @@ router.put('/update/:id', authenticateToken, updateEmployee);
 router.post('/logout', logoutEmployee);
 router.get('/employee/:id', authenticateToken, getEmployeeById);
 router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/reset-password/', resetPassword);
 
 module.exports = router;
