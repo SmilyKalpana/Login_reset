@@ -6,17 +6,44 @@ const employeeModel = async (sequelize) => {
   const Employee = sequelize.define('Employee', {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate:{
+      len :{ args:[3,100],
+        message:`min 3 letters`}
+      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       isLowercase: true,
-      unique: true,
+      require: true,
+      unique: { message: `Email already exists` },
+      validate: {
+        isEmail: { message: `Invalid email format` }
+      },
+      set(value) {
+        this.setDataValue('email', value.toLowerCase());
+      }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+       validate: {
+    isStrong(value) {
+      // Regex explanation:
+      // ^                 start of string
+      // (?=.*[A-Z])       at least one uppercase letter
+      // (?=.*\d)          at least one digit
+      // (?=.*[!@#$%^&*])  at least one special character from the set
+      // .{4,}             minimum length 8 (optional, can be changed or removed)
+      const strongPassword = /(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{4,}$/;
+      if (!strongPassword.test(value)) {
+        throw new Error(
+          'Password must contain at least one uppercase letter, one number, one special character, and be at least 8 characters long'
+        );
+      }
+    }
+  }
     },
     resetPasswordToken: {
       type: DataTypes.STRING,
