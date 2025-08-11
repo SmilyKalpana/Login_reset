@@ -2,7 +2,7 @@
 const Sequelize = require("sequelize");
 const employeeModel = require("../src/models/employeeSchema");
 
-const sequelize = new Sequelize('****', 'postgres', '*****', {
+const sequelize = new Sequelize('login_omnie', 'postgres', '123456', {
   host: 'localhost',
   dialect: 'postgres'
 });

@@ -11,13 +11,14 @@ const { ValidationError } = require('sequelize');
 const getAllEmployees = async (req, res) => {
   try {
     const Employee = getEmployeeModel();
-    const employees = await Employee.findAll()
+    const employees = await Employee.findAll({
+      attributes: { exclude: ['password', 'resetToken', 'resetPasswordToken', 'resetPasswordExpires', 'updatedAt',] }
+    })
     if (employees.length == 0) {
-      return res.status(200).json("Users not found")
+      return res.status(404).json("Users not found")
     }
     res.status(200).json(employees);
   } catch (error) {
-    console.error("Error fetching employees:", error);
     res.status(500).send("Server error");
   }
 };
@@ -141,7 +142,7 @@ const getEmployeeById = async (req, res) => {
     const { id } = req.params;
     const Employee = getEmployeeModel();
 
-    const employee = await Employee.findByPk(id);
+    const employee = await Employee.findByPk(id, { attributes: { exclude: ["password", "resetToken"] } });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
