@@ -6,17 +6,40 @@ const employeeModel = async (sequelize) => {
   const Employee = sequelize.define('Employee', {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: "Name cannot be empty" },
+        len: { args: [3, 50], msg: "Name must be between 3 and 50 characters" }
+      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       isLowercase: true,
-      unique: true,
+      unique: { msg: `Email is already registered` },
+      validate: {
+        isEmail: { msg: `Emial is Invalid` }
+        ,
+        isLowercase: true,
+        notEmpty: { msg: `Email cannot be empty` }
+      }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: { msg: "Password cannot be empty" },
+        len: { args: [6, 100], msg: "Password must be between 6 and 100 characters" },
+        isStrongPassword(value) {
+          const strongPasswordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
+          if (!strongPasswordRegex.test(value)) {
+            throw new Error(
+              "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+            );
+          }
+        }
+      }
     },
     resetPasswordToken: {
       type: DataTypes.STRING,

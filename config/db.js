@@ -2,7 +2,7 @@
 const Sequelize = require("sequelize");
 const employeeModel = require("../src/models/employeeSchema");
 
-const sequelize = new Sequelize('login_omnie', 'postgres', '50406315', {
+const sequelize = new Sequelize('login_omnie', 'postgres', '123456', {
   host: 'localhost',
   dialect: 'postgres'
 });
@@ -13,7 +13,7 @@ const connection = async () => {
     await sequelize.authenticate();
     console.log('Connection has been established successfully.');
     EmployeeModel = await employeeModel(sequelize)
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: false });
     console.log("Database Synced")
   } catch (error) {
     console.error('Unable to connect to the database:', error);

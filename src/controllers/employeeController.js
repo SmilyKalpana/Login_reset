@@ -1,14 +1,12 @@
 // Employee Controller
-const bcrypt = require('bcrypt');
 const { getEmployeeModel } = require('../../config/db');
 const crypto = require('crypto');
 const { sendMail } = require('../utils/mailer');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const { ValidationError } = require('sequelize');
 
 
-
-const JWT_SECRET = "1234567890";
 // Get Employees
 const getAllEmployees = async (req, res) => {
   try {
@@ -47,6 +45,11 @@ const registerEmployee = async (req, res) => {
     res.status(201).json({ message: 'Employee registered successfully', employee: { id: newEmployee.id, name: newEmployee.name, email: newEmployee.email } });
   } catch (error) {
     console.error('Error registering employee:', error);
+    if (error instanceof ValidationError) {
+      // Collect all validation error messages
+      const messages = error.errors.map(err => err.message);
+      return res.status(400).json({ errors: messages });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -81,7 +84,7 @@ const loginEmployee = async (req, res) => {
     };
 
     // Sign token
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({
       message: 'Login successful',
@@ -93,36 +96,6 @@ const loginEmployee = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-// const loginEmployee = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return res.status(400).json({ message: 'Email and password are required' });
-//     }
-
-//     const Employee = getEmployeeModel();
-
-//     const employee = await Employee.findOne({ where: { email } });
-//     if (!employee) {
-//       return res.status(401).json({ message: 'Invalid email or password' });
-//     }
-
-//     const validPassword = await employee.isValidPassword(password);
-//     if (!validPassword) {
-//       return res.status(401).json({ message: 'Invalid email or password' });
-//     }
-
-//     // Successful login — you can also create JWT token here if needed
-//     res.status(200).json({
-//       message: 'Login successful',
-//       employee: { id: employee.id, name: employee.name, email: employee.email }
-//     });
-//   } catch (error) {
-//     console.error('Error logging in employee:', error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
 
 // Update employee
 const updateEmployee = async (req, res) => {
@@ -248,4 +221,4 @@ const resetPassword = async (req, res) => {
 };
 
 // Export controllers
-module.exports = { resetPassword, forgotPassword, registerEmployee, loginEmployee, updateEmployee, logoutEmployee, getEmployeeById, getAllEmployees };
+module.exports = { resetPassword, getAllEmployees, forgotPassword, registerEmployee, loginEmployee, updateEmployee, logoutEmployee, getEmployeeById, getAllEmployees };
