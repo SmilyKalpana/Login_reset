@@ -8,34 +8,40 @@ const employeeModel = async (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        notEmpty: { msg: "Name cannot be empty" },
-        len: { args: [3, 50], msg: "Name must be between 3 and 50 characters" }
+        len: {
+          args: [3, 100],
+          message: `min 3 letters`
+        }
       }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       isLowercase: true,
-      unique: { msg: `Email is already registered` },
+      require: true,
+      unique: { message: `Email already exists` },
       validate: {
-        isEmail: { msg: `Emial is Invalid` }
-        ,
-        isLowercase: true,
-        notEmpty: { msg: `Email cannot be empty` }
+        isEmail: { message: `Invalid email format` }
+      },
+      set(value) {
+        this.setDataValue('email', value.toLowerCase());
       }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        notEmpty: { msg: "Password cannot be empty" },
-        len: { args: [6, 100], msg: "Password must be between 6 and 100 characters" },
-        isStrongPassword(value) {
-          const strongPasswordRegex =
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
-          if (!strongPasswordRegex.test(value)) {
+        isStrong(value) {
+          // Regex explanation:
+          // ^                 start of string
+          // (?=.*[A-Z])       at least one uppercase letter
+          // (?=.*\d)          at least one digit
+          // (?=.*[!@#$%^&*])  at least one special character from the set
+          // .{4,}             minimum length 8 (optional, can be changed or removed)
+          const strongPassword = /(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{4,}$/;
+          if (!strongPassword.test(value)) {
             throw new Error(
-              "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+              'Password must contain at least one uppercase letter, one number, one special character, and be at least 8 characters long'
             );
           }
         }

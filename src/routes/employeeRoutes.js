@@ -14,6 +14,7 @@ router.put('/update/:id', authenticateToken, updateEmployee);
 router.post('/logout', logoutEmployee);
 router.get('/employees', getAllEmployees);
 router.get('/employee/:id', authenticateToken, getEmployeeById);
+router.get('/employees',  getAllEmployees);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 

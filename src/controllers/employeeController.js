@@ -44,11 +44,9 @@ const registerEmployee = async (req, res) => {
 
     res.status(201).json({ message: 'Employee registered successfully', employee: { id: newEmployee.id, name: newEmployee.name, email: newEmployee.email } });
   } catch (error) {
-    console.error('Error registering employee:', error);
-    if (error instanceof ValidationError) {
-      // Collect all validation error messages
-      const messages = error.errors.map(err => err.message);
-      return res.status(400).json({ errors: messages });
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+      const validationErrors = error.errors.map(err => err.message);
+      return res.status(400).json({ message: 'Validation failed', errors: validationErrors });
     }
     res.status(500).json({ message: 'Server error' });
   }
@@ -76,7 +74,7 @@ const loginEmployee = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Create JWT payload (you can add other claims if needed)
+    // Create JWT payload
     const payload = {
       id: employee.id,
       email: employee.email,
@@ -121,12 +119,23 @@ const updateEmployee = async (req, res) => {
 
     await employee.save();
 
-    res.status(200).json({ message: 'Employee updated successfully', employee: { id: employee.id, name: employee.name, email: employee.email } });
+    res.status(200).json({
+      message: 'Employee updated successfully',
+      employee: { id: employee.id, name: employee.name, email: employee.email }
+    });
   } catch (error) {
     console.error('Error updating employee:', error);
+
+    // Handle Sequelize validation errors
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+      const validationErrors = error.errors.map(err => err.message);
+      return res.status(400).json({ message: 'Validation failed', errors: validationErrors });
+    }
+
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 const getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -182,6 +191,7 @@ const forgotPassword = async (req, res) => {
     await sendMail(employee.email, "Password Reset", html);
 
     res.status(200).json({ message: "Password reset email sent" });
+    console.log(`${token}`)
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: "Server error" });
@@ -196,7 +206,7 @@ const resetPassword = async (req, res) => {
     const employee = await Employee.findOne({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpires: { [Op.gt]: Date.now() },  // token not expired
+        resetPasswordExpires: { [Op.gt]: Date.now() },
       }
     });
 
@@ -204,7 +214,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    // Update password — password hashing is handled by model hooks
+
     employee.password = password;
 
     // Clear reset token fields
@@ -221,4 +231,4 @@ const resetPassword = async (req, res) => {
 };
 
 // Export controllers
-module.exports = { resetPassword, getAllEmployees, forgotPassword, registerEmployee, loginEmployee, updateEmployee, logoutEmployee, getEmployeeById, getAllEmployees };
+module.exports = { getAllEmployees, resetPassword, forgotPassword, registerEmployee, loginEmployee, updateEmployee, logoutEmployee, getEmployeeById, getAllEmployees };
