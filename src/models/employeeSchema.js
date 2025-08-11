@@ -32,12 +32,6 @@ const employeeModel = async (sequelize) => {
       allowNull: false,
       validate: {
         isStrong(value) {
-          // Regex explanation:
-          // ^                 start of string
-          // (?=.*[A-Z])       at least one uppercase letter
-          // (?=.*\d)          at least one digit
-          // (?=.*[!@#$%^&*])  at least one special character from the set
-          // .{4,}             minimum length 8 (optional, can be changed or removed)
           const strongPassword = /(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{4,}$/;
           if (!strongPassword.test(value)) {
             throw new Error(
